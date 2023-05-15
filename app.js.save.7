@@ -38,16 +38,6 @@ app.get('/getTheLengthOfids',async(req,res)=>{
 })
 
 
-
-app.get('/deleteFromIds',async(req,res)=>{
-  var phone = parseInt(req.query['phone']);
-  delete pilotPassengerids[phone];
-  res.send("Deleted");
-});
-
-
-
-
 app.get('/pilots', async (req, res) => {
   let data = await dbConnection();
   let ress = await data.find({}).toArray();
@@ -67,7 +57,7 @@ app.get('/passengers/getpilot',async(req,res)=>{
     '$geoNear': {        //This is for finding the destination. First we find common destination.
       'distanceField': 'distance',
       'key': 'polylineLocs',
-      'maxDistance': 450,
+      'maxDistance': 235,
       'spherical': true,
       'near': {
         'type': 'Point',
@@ -84,7 +74,7 @@ app.get('/passengers/getpilot',async(req,res)=>{
     '$match': {
       'location': {   // This is for finding nearby pilots at current location.
         '$geoWithin': {
-          '$centerSphere': [[parseFloat(req.query['currLong']), parseFloat(req.query['currLat'])],0.155343/ 3963.189]
+          '$centerSphere': [[parseFloat(req.query['currLong']), parseFloat(req.query['currLat'])],0.0776714 / 3963.189]
         },
 
     }
@@ -104,8 +94,8 @@ const dataToSend={
         "pilotDestination":pilotdataToSend['destination'],
         "passengerCurrentLocation":passengerdataToSend['currLoc'],
         "pilotCurrentLocation":pilotdataToSend['location']['coordinates'],
-       "passengerDest":passengerdataToSend['dest'],
-        "waypoint":pilotdataToSend['waypoint']
+
+
       }
 pilotPassengerids[passengerdataToSend['phone']].send(JSON.stringify(dataToSend));
 pilotPassengerids[pilotdataToSend['phone']].send(JSON.stringify(dataToSend));
@@ -295,9 +285,14 @@ app.delete('/otp/deleteOTP', async (req, res) => {
 
   let data = await otp();
   let ress = await data.deleteOne({pilot:parseInt(req.query['pilot']),passenger:parseInt(req.query['passenger']),otp:parseInt(req.query['otp'])}).toArray();
-  res.send('deleted');
+  if(ress.acknowledged) {
+    res.send('deleted');
 
-  
+  }
+  else {
+    res.send('not deleted');
+
+ }
 });
 
 
@@ -336,7 +331,11 @@ wsForLiveLocation.on('connection', async (wsx, req) => {
   webSockets[wsx.id] = wsx;
   wsx.on('message', async (message) => {
             
-     
+      if(message=='close')
+    {
+      wsx.close();
+    }
+    else{
     console.log(JSON.parse(message));
     data = JSON.parse(message);
 
@@ -344,7 +343,7 @@ wsForLiveLocation.on('connection', async (wsx, req) => {
     if (webSockets[to].readyState !== WebSocket.CLOSED) {
       webSockets[to].send(JSON.stringify(data['location']));
     }
-  
+  }
 
 
 
@@ -352,6 +351,12 @@ wsForLiveLocation.on('connection', async (wsx, req) => {
   });
 });
 
+wsForLiveLocation.on('close', async (wsx, req) => {
+
+  
+var idx = webSockets.indexOf(wsx.id);
+webSockets.splice(idx,1);
+});
 
 
 app.get('/pilots/UserInfo', async (req, res) => {
@@ -362,10 +367,11 @@ app.get('/pilots/UserInfo', async (req, res) => {
 });
 
 app.get('/closeTheConnection',async(req,res)=>{
-    var phone = parseInt(req.query['phone']);
-  delete webSockets[phone];
-  res.send(JSON.stringify("deleted"));
-
+  var phone = parseInt(req.query['phone']);
+ res.send(phone);
+  var idx = webSockets.indexOf(phone);
+  webSockets.splice(idx, 1);
+//  res.send("Closed");
 });
 
 
