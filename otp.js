@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const url = 'mongodb+srv://doadmin:0m9P2L357q4r8sOR@livedb-aac25584.mongo.ondigitalocean.com/otp?tls=true&authSource=admin'
+const url = 'mongodb+srv://doadmin:T2673ly9L4VD15BY@db-mongodb-nyc1-89412-a673e063.mongo.ondigitalocean.com/otp?tls=true&authSource=admin'
 const client = new MongoClient(url);
 
 async function otp() {
