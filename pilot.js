@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const url = 'mongodb+srv://doadmin:7s38mU4x09d2tkl5@PilotPassenger-3452c069.mongo.ondigitalocean.com/admin?tls=true&authSource=admin';
+const url = 'mongodb+srv://doadmin:J532R41TN9e7L6qY@live-database-26594717.mongo.ondigitalocean.com/admin?authSource=admin&replicaSet=live-database&tls=true';
 const client = new MongoClient(url);
 
 async function dbConnection() {
